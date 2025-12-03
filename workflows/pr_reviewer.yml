@@ -1,0 +1,36 @@
+name: Automated PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install analysis tool(s)
+        run: |
+          pip install semgrep
+
+      - name: Run static analysis / review logic
+        run: |
+          semgrep --config auto  # or your custom config / tool
+
+      - name: Comment on PR with results
+        uses: thollander/actions-comment-pull-request@v3
+        if: always()
+        with:
+          message: |
+            ## 🔎 Automated Review Results  
+            Static analysis done — (you can customize this message)
