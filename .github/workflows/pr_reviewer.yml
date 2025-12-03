@@ -19,18 +19,63 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install analysis tool(s)
+      - name: Install tools
         run: |
-          pip install semgrep
+          pip install semgrep requests
 
-      - name: Run static analysis / review logic
+      - name: Run Semgrep scan
         run: |
-          semgrep --config auto  # or your custom config / tool
+          semgrep --config auto --json > semgrep.json
+        continue-on-error: true
 
-      - name: Comment on PR with results
+      - name: Generate Gemini Summary
+        id: ai_summary
+        env:
+          GEMINI_API_KEY: ${{ secrets.AIzaSyCoVvrkQO0izEkCAfRLZ0QNWRJ0u3NOfWA }}
+        run: |
+          python <<EOF
+          import json, requests, os
+
+          # Read analysis output
+          with open("semgrep.json", "r") as f:
+              report = f.read()
+
+          prompt = f"""
+          You are a code review assistant.
+          Summarize the following static analysis report concisely:
+          - Highlight critical issues
+          - Mention files affected
+          - Suggest improvements
+          - Keep it under 200 words
+          
+          Report:
+          {report}
+          """
+
+          url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+          headers = {"Content-Type": "application/json"}
+          payload = {
+              "contents": [{"parts": [{"text": prompt}]}]
+          }
+
+          response = requests.post(
+              url + f"?key={os.getenv('AIzaSyCoVvrkQO0izEkCAfRLZ0QNWRJ0u3NOfWA')}",
+              headers=headers,
+              json=payload
+          ).json()
+
+          summary = response["candidates"][0]["content"]["parts"][0]["text"]
+
+          # Escape GitHub multiline output
+          summary = summary.replace("%", "%25").replace("\n", "%0A").replace("\r", "%0D")
+
+          print(f"::set-output name=summary::{summary}")
+          EOF
+
+      - name: Comment on PR
         uses: thollander/actions-comment-pull-request@v3
         if: always()
         with:
           message: |
-            ## 🔎 Automated Review Results  
-            Static analysis done!! 
+            ## 🤖 Gemini AI Review Summary
+            ${{ steps.ai_summary.outputs.summary }}
