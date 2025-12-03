@@ -1,52 +1,37 @@
-- name: Generate Gemini Summary
-  id: ai_summary
-  env:
-    GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-  run: |
-    python <<EOF
-    import json, requests, os
+name: Automated PR Review
 
-    # Read Semgrep report
-    try:
-        with open("semgrep.json", "r") as f:
-            report = f.read()
-    except:
-        report = "No Semgrep output found."
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
 
-    prompt = f"""
-    You are a code review assistant.
-    Summarize the following static analysis report concisely:
-    - Highlight critical issues
-    - Mention files affected
-    - Suggest improvements
-    - Keep it under 200 words
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
 
-    Report:
-    {report}
-    """
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
-    api_key = os.getenv("GEMINI_API_KEY")
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-    response = requests.post(
-        url + f"?key={api_key}",
-        headers={"Content-Type": "application/json"},
-        json={"contents": [{"parts": [{"text": prompt}]}]}
-    ).json()
+      - name: Install analysis tool(s)
+        run: |
+          pip install semgrep
 
-    # Debug print to see actual response if needed
-    print("Gemini response:", response)
+      - name: Run static analysis / review logic
+        run: |
+          semgrep --config auto  # or your custom config / tool
+          
 
-    # Extract safely
-    summary = (
-        response.get("candidates", [{}])[0]
-        .get("content", {})
-        .get("parts", [{}])[0]
-        .get("text", "Gemini returned no summary.")
-    )
-
-    # Escape GitHub output
-    summary = summary.replace("%", "%25").replace("\n", "%0A").replace("\r", "%0D")
-
-    print(f"::set-output name=summary::{summary}")
-    EOF
+      - name: Comment on PR with results
+        uses: thollander/actions-comment-pull-request@v3
+        if: always()
+        with:
+          message: |
+            ## 🔎 Automated Review Results  
+            Static analysis done!! 
