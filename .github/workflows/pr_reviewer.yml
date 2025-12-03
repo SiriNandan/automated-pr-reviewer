@@ -1,36 +1,65 @@
-name: Automated PR Review
+name: Automated PR Review (Secure)
 
+# Part A: Run analysis on pull_request (unprivileged context)
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  review:
+  analyze:
+    name: Analyze PR (unprivileged)
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
 
     steps:
-      - name: Checkout code
+      - name: Checkout PR code (read-only context)
         uses: actions/checkout@v4
+        # with default settings → GITHUB_TOKEN is read-only, no secrets exposed
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
-      - name: Install analysis tool(s)
+      - name: Install analysis tools
         run: |
-          pip install semgrep
+          pip install semgrep   # or other static analysis / lint tools
 
-      - name: Run static analysis / review logic
+      - name: Run static analysis
         run: |
-          semgrep --config auto  # or your custom config / tool
+          semgrep --config auto --json --output pr_analysis.json || true
 
-      - name: Comment on PR with results
-        uses: thollander/actions-comment-pull-request@v3
-        if: always()
+      - name: Upload analysis result artifact
+        uses: actions/upload-artifact@v4
         with:
+          name: pr-analysis-result
+          path: pr_analysis.json
+
+# Part B: Post comment on PR via pull_request_target (privileged)
+# This job has write permission / secrets / comment ability, but does NOT
+# check out or execute untrusted PR code — it only reads the previously stored artifact.
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  comment:
+    name: Post analysis result as comment
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write    # only permission needed
+    steps:
+      - name: Download analysis results
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-analysis-result
+
+      - name: Post comment on PR
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          # you can build a nice comment; example below:
           message: |
-            ## 🔎 Automated Review Results  
-            Static analysis done!! 
+            ## 🔎 Automated Review Report  
+            **Static Analysis Results:**  
+            ```
+            ${{ fromJson(steps.download.outputs.content) }}
+            ```
