@@ -8,7 +8,7 @@ repo_full = os.getenv("REPO_FULL_NAME")
 pr_number = int(os.getenv("PR_NUMBER"))
 github_token = os.getenv("GITHUB_TOKEN")
 
-# GitHub client (FIXED)
+# GitHub client
 gh = Github(auth=Auth.Token(github_token))
 repo = gh.get_repo(repo_full)
 pr = repo.get_pull(pr_number)
@@ -25,10 +25,10 @@ pr_description = pr.body or "No description provided."
 # Build LLM prompt
 prompt = f"""
 You are an expert PR reviewer.
-Write a **medium-length detailed PR summary** including:
+Write a medium-length but detailed PR summary including:
 
 - What the PR changes
-- Why the changes matter
+- Why these changes matter
 - Summary of added/removed/updated files
 - Potential risks
 - Suggestions for improvement
@@ -46,12 +46,12 @@ Changed Files:
 Respond in clean GitHub Markdown.
 """
 
-# Gemini client (new API)
+# Gemini client (NEW API)
 client = genai.Client(api_key=api_key)
 
-response = client.models.generate(
+response = client.models.generate_content(
     model="gemini-2.0-flash",
-    prompt=prompt
+    contents=prompt
 )
 
 print(response.text)
