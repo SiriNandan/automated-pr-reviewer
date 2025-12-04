@@ -77,10 +77,10 @@ concise, structured summary of the Pull Request (PR) based on the provided code 
 {semgrep_summary}
 
 ### Summary
-- 2–3 bullets describing concrete changes in the diff. if the changes are more add more bullets but dont add more than 1 .
+- 2–3 bullets describing concrete changes in the diff. if the changes are more add more bullets.
 
 ### Why It Matters
-- 1–2 Only insights grounded in diff..  if the changes are more add more bullets but dont add more than 1.
+- 1–2 Only insights grounded in diff..  if the changes are more add more bullets.
 
 ### Issues
 - Real issues from diff or Semgrep. Write "No issues found" if nothing.
@@ -95,7 +95,7 @@ concise, structured summary of the Pull Request (PR) based on the provided code 
 - LOW / MEDIUM / HIGH.
 
 ### Recommendations
-- Max 2 bullets based ONLY on the diff. if the changes are more add more bullets but dont add more than 1.
+- Max 2 bullets based ONLY on the diff. if the changes are more add more bullets.
 
 
 RULES:
