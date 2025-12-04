@@ -2,49 +2,57 @@ import os
 from github import Github
 from google import genai
 
+# Load environment variables
 api_key = os.getenv("GEMINI_API_KEY")
 repo_full = os.getenv("REPO_FULL_NAME")
 pr_number = int(os.getenv("PR_NUMBER"))
 github_token = os.getenv("GITHUB_TOKEN")
 
 # GitHub client
-gh = Github(github_token)
+gh = Github(auth=github_token)
 repo = gh.get_repo(repo_full)
 pr = repo.get_pull(pr_number)
 
-# Collect all PR data
-diff = pr.get_files()
-changes_text = "\n".join([f"- {f.filename} (+{f.additions} / -{f.deletions})" for f in diff])
-pr_description = pr.body or "No description provided."
-title = pr.title
+# Collect PR details
+files = pr.get_files()
+files_summary = "\n".join(
+    [f"- {f.filename} (+{f.additions} / -{f.deletions})" for f in files]
+)
 
-# Build prompt
+pr_title = pr.title
+pr_description = pr.body or "No description provided."
+
+# Build Gemini prompt
 prompt = f"""
-You are an advanced code review assistant.
-Generate a **medium-length detailed PR summary** including:
+You are a senior AI code reviewer. Generate a **medium-length, detailed PR summary** including:
 
 - PR Title
-- What was changed
-- Why the change matters
-- Summary of added/removed files
+- High-level explanation of what changed
+- Summary of file changes
+- Why the changes matter
 - Potential risks
-- Suggested improvements
-- Any missing tests or validations
+- Any missing tests or improvements
 
 PR Title:
-{title}
+{pr_title}
 
 PR Description:
 {pr_description}
 
 Changed Files:
-{changes_text}
+{files_summary}
 
-Provide the final result in professional markdown.
+Return formatted Markdown.
 """
 
+# Initialize Gemini client (NEW SDK)
 client = genai.Client(api_key=api_key)
-result = client.generate_text(model="gemini-2.0-flash", prompt=prompt)
 
-# Print directly → goes to GitHub Action output
-print(result.text)
+# Generate response using the correct API
+response = client.models.generate(
+    model="gemini-2.0-flash",
+    prompt=prompt
+)
+
+# Print the result for GitHub Actions to capture
+print(response.text)
