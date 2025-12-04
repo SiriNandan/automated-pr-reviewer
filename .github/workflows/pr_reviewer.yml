@@ -1,4 +1,4 @@
-name: 🤖 Automated PR Reviewer
+name: Automated PR Reviewer
 
 on:
   pull_request:
@@ -12,37 +12,33 @@ jobs:
       pull-requests: write
 
     steps:
-      # ---------------------------
       # Checkout
-      # ---------------------------
-      - name: ⬇️ Checkout code
+
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # ---------------------------
       # Python setup
-      # ---------------------------
-      - name: 🐍 Setup Python
+
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: 📦 Install Dependencies
+      - name: Install Dependencies
         run: |
           pip install semgrep google-genai PyGithub requests
 
-      # ---------------------------
       # Semgrep
-      # ---------------------------
-      - name: 🔍 Run Semgrep analysis
+
+      - name: Run Semgrep analysis
         run: |
           semgrep --config auto --json > semgrep_output.json || true
         env:
           SEMGREP_CONFIG: auto
 
-      # ---------------------------
       # Fetch PR diff
-      # ---------------------------
-      - name: 📄 Fetch PR Diff
+
+      - name: Fetch PR Diff
         id: diff
         run: |
           echo "Fetching PR Diff..."
@@ -50,10 +46,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ---------------------------
       # Run Gemini LLM Review
-      # ---------------------------
-      - name: 🧠 Generate PR Summary
+
+      - name: Generate PR Summary
         id: llm
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -67,14 +62,13 @@ jobs:
           echo "$SUMMARY" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
-      # ---------------------------
       # Comment on PR
-      # ---------------------------
-      - name: 💬 Post PR Review Comment
+
+      - name: Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
         if: always()
         with:
           message: |
-            ## 🤖 Automated PR Review
-            ### 🧠 Pull Request Summary
+            ## Automated PR Review
+            ### Pull Request Summary
             ${{ steps.llm.outputs.summary }}
