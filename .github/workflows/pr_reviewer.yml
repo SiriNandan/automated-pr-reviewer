@@ -30,7 +30,7 @@ jobs:
 
       # Semgrep
 
-      - name: Run Semgrep analysis
+      - name: Run  analysis
         run: |
           semgrep --config auto --json > semgrep_output.json || true
         env:

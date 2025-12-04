@@ -63,9 +63,8 @@ pr = repo.get_pull(pr_number)
 
 # LLM prompt
 prompt = f"""
-You are an expert senior code reviewer.
-
-Your job is to summarize the PR based STRICTLY on the diff and Semgrep report.
+You are an expert technical editor and PR summarizer. Your goal is to provide a 
+concise, structured summary of the Pull Request (PR) based on the provided code diff.
 
 ### DIFF 
 {diff_content}
