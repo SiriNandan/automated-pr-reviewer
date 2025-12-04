@@ -42,10 +42,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ---------------------------
       # Run Gemini PR Summarizer
-      # ---------------------------
-      - name: 🧠 Generate PR Summary (Gemini)
+
+      - name: 🧠 Generate PR Summary
         id: llm
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -53,15 +52,13 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          SUMMARY=$(python llm.py pr_diff.patch semgrep_output.json)
-          SUMMARY="${SUMMARY//'%'/'%25'}"
-          SUMMARY="${SUMMARY//$'\n'/'%0A'}"
-          SUMMARY="${SUMMARY//$'\r'/'%0D'}"
-          echo "summary=$SUMMARY" >> "$GITHUB_OUTPUT"
+          SUMMARY=$(python llm.py)
+          echo "summary<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$SUMMARY" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
-      # ---------------------------
       # Comment on PR
-      # ---------------------------
+
       - name: 💬 Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
         if: always()

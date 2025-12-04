@@ -56,16 +56,20 @@ developer-friendly Pull Request summary (max 120 words).
 ### Why It Matters
 - 1–2 bullets explaining impact or improvements.
 
-### Risks / Issues
+### Issues 
 - Mention only real risks. If none, write "None".
 
 ### Verdict
 - One sentence: approve, needs fixes, or review required.
 
+### Risk Level 
+- Assign a risk of LOW, MEDIUM, or HIGH based on the complexity and scope.
+
 Rules:
 - DO NOT restate the PR title or description.
 - DO NOT repeat code.
 - DO NOT exceed 120 words.
+- Respond ONLY in clear Markdown format, using headers as listed.
 """
 
 client = genai.Client(api_key=api_key)
