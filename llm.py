@@ -65,6 +65,10 @@ developer-friendly Pull Request summary (max 120 words).
 ### Risk Level 
 - Assign a risk of LOW, MEDIUM, or HIGH based on the complexity and scope.
 
+### Recommendations 
+
+- 1-2 bullets recommend the changes that are needed. 
+
 Rules:
 - DO NOT restate the PR title or description.
 - DO NOT repeat code.
