@@ -1,7 +1,8 @@
 import os
 import sys
 from github import Github, Auth
-from google import genai
+# from google import genai
+from google.genai import Client
 import json
 
 # Load env vars

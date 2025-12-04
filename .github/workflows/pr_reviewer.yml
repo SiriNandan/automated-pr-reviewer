@@ -7,17 +7,15 @@ on:
 jobs:
   review_and_summarize:
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       pull-requests: write
 
     steps:
-      # Checkout
 
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # Python setup
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -26,27 +24,20 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install semgrep google-genai PyGithub requests
+          pip install google-genai PyGithub semgrep requests
 
-      # Semgrep
-
-      - name: Run  analysis
+      - name: Run Semgrep Analysis
         run: |
           semgrep --config auto --json > semgrep_output.json || true
         env:
           SEMGREP_CONFIG: auto
 
-      # Fetch PR diff
-
       - name: Fetch PR Diff
         id: diff
         run: |
-          echo "Fetching PR Diff..."
           gh pr diff ${{ github.event.pull_request.number }} --patch > pr_diff.patch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Run Gemini LLM Review
 
       - name: Generate PR Summary
         id: llm
@@ -57,12 +48,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEMGREP_CONFIG: auto
         run: |
-          SUMMARY=$(python llm.py pr_diff.patch semgrep_output.json)
-          echo "summary<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$SUMMARY" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "Gemini API key missing! Did you add GEMINI_API_KEY to repo secrets?"
+            exit 1
+          fi
 
-      # Comment on PR
+          SUMMARY=$(python llm.py pr_diff.patch semgrep_output.json)
+          {
+            echo "summary<<EOF"
+            echo "$SUMMARY"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
@@ -70,5 +66,4 @@ jobs:
         with:
           message: |
             ## Automated PR Review
-            ### Pull Request Summary
             ${{ steps.llm.outputs.summary }}
