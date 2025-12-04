@@ -23,50 +23,29 @@ pr_title = pr.title
 pr_description = pr.body or "No description provided."
 
 prompt = f"""
-You are an expert Senior Software Engineer performing an in-depth Pull Request review.
+You are an automated GitHub Pull Request reviewer.
 
-Your task:
-Write a **Automated PR summary** using GitHub Markdown.
+Your job is to create a short, clear summary of the PR.
 
-### Output Format (IMPORTANT)
-Follow this exact format:
+Output format:
+### Summary
+- 2–3 bullets describing what changed.
 
-## 📝 PR Summary
-(1 short paragraph overview)
+### Why It Matters
+- 1–2 bullets explaining the impact.
 
-## 📂 Changed Files
-- File name (added/removed/modified)
-- Line summary (+ additions / - deletions)
+### Risks / Issues
+- Mention only real issues (or write “None”).
 
-## 🔍 What This PR Changes
-(2–5 bullet points)
+### Verdict
+- One sentence: approve, needs fixes, or review required.
 
-## 🎯 Why These Changes Matter
-(2–4 bullet points)
-
-## ⚠️ Risks & Impact
-(1–3 bullet points)
-
-## 🧪 Tests & Validation
-- Missing tests?
-- Required validations?
-- Suggested test cases.
-
-## 💡 Recommendations
-(2–4 bullet points of suggestions)
-
-Use **professional tone**, **no unnecessary text**, **no repetition**.
-
-PR Title:
-{pr_title}
-
-PR Description:
-{pr_description}
-
-Changed Files:
-{files_summary}
-"""
-
+Rules:
+- Max 120 words.
+- No fluff, no repetition.
+- Do NOT restate commit messages or PR description.
+- Use simple, developer-friendly language.
+    """
 # Gemini client (NEW API)
 client = genai.Client(api_key=api_key)
 

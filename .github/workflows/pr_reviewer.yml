@@ -40,7 +40,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SUMMARY=$(python llm.py)
-          SUMMARY="${SUMMARY//'%'/'%25'}"
+          SUMMARY="${SUMMARY//'%'/'%15'}"
           SUMMARY="${SUMMARY//$'\n'/'%0A'}"
           SUMMARY="${SUMMARY//$'\r'/'%0D'}"
 
