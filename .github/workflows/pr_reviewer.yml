@@ -1,37 +1,66 @@
-name: Automated PR Review
+name: 🤖 Automated PR Review + Gemini Summary
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  review:
+  review_and_summarize:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pull-requests: write
 
     steps:
-      - name: Checkout code
+      - name: ⬇️ Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.11"
 
-      - name: Install analysis tool(s)
+      - name: 📦 Install Dependencies
         run: |
-          pip install semgrep
+          pip install semgrep google-genai PyGithub requests
 
-      - name: Run static analysis / review logic
+      - name: 🔍 Run Semgrep analysis
         run: |
-          semgrep --config auto  # or your custom config / tool
-          
+          semgrep --config auto --json > semgrep_output.json || true
 
-      - name: Comment on PR with results
+      # ---------------------------
+      # Run Gemini PR Summarizer
+      # ---------------------------
+      - name: 🧠 Generate PR Summary (Gemini)
+        id: llm
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          REPO_FULL_NAME: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SUMMARY=$(python llm.py)
+          SUMMARY="${SUMMARY//'%'/'%25'}"
+          SUMMARY="${SUMMARY//$'\n'/'%0A'}"
+          SUMMARY="${SUMMARY//$'\r'/'%0D'}"
+          echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
+
+      # ---------------------------
+      # Comment on PR — LLM + Semgrep Together
+      # ---------------------------
+      - name: 💬 Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
         if: always()
         with:
           message: |
-            ## 🔎 Automated Review Results  
-            Static analysis done!! 
+            ## 🤖 Automated PR Review
+
+            ### 🧠 **Gemini PR Summary**
+            ${{ steps.llm.outputs.summary }}
+
+            ---
+
+            ### 🔍 **Semgrep Static Analysis**
+            \`\`\`json
+            $(cat semgrep_output.json)
+            \`\`\`
