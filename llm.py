@@ -126,7 +126,7 @@ You are an expert technical PR reviewer.
 ### Risk Level
 - LOW / MEDIUM / HIGH
 
-### Recommendations
+### Changes Required
 - Up to 2 bullets, no generic advice. if changes are more add more bullets.
 
 RULES:
