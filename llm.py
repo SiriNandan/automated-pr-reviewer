@@ -1,9 +1,10 @@
 import os
 import sys
+import json
+import subprocess
 from github import Github, Auth
 from google import genai
 from google.genai import Client
-import json
 
 # Load env vars
 api_key = os.getenv("GEMINI_API_KEY")
@@ -14,7 +15,6 @@ semgrep_config = os.getenv("SEMGREP_CONFIG", "auto")
 
 # Read inputs safely
 diff_path = sys.argv[1] if len(sys.argv) > 1 else None
-semgrep_path = sys.argv[2] if len(sys.argv) > 2 else None
 
 diff_content = ""
 if diff_path and os.path.exists(diff_path):
@@ -22,10 +22,36 @@ if diff_path and os.path.exists(diff_path):
         diff_content = f.read()
 
 if len(diff_content) < 10:
-    print(" Diff missing or too small. Unable to generate PR summary.")
+    print("Diff missing or too small. Unable to generate PR summary.")
     sys.exit(0)
 
-# Load Semgrep summary
+# Run Semgrep (JSON + text)
+def run_semgrep():
+    json_out = "/tmp/semgrep.json"
+
+    try:
+        subprocess.run(
+            [
+                "semgrep", "scan",
+                "--config", semgrep_config,
+                "--json",
+                "--output", json_out
+            ],
+            check=False
+        )
+    except Exception as e:
+        return None
+
+    if os.path.exists(json_out):
+        try:
+            with open(json_out, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            return None
+
+    return None
+
+# Convert Semgrep JSON to readable grouped text
 def format_semgrep(findings):
     if not findings:
         return "No Semgrep issues found."
@@ -56,16 +82,10 @@ def format_semgrep(findings):
 
     return "\n".join(output).strip()
 
-# Load Semgrep JSON
-semgrep_summary = "No Semgrep issues found."
-try:
-    if semgrep_path and os.path.exists(semgrep_path):
-        with open(semgrep_path, "r", encoding="utf-8") as f:
-            semgrep_json = json.load(f)
-            findings = semgrep_json.get("results", [])
-            semgrep_summary = format_semgrep(findings)
-except Exception as e:
-    semgrep_summary = f"Semgrep error: {e}"
+# Run Semgrep
+semgrep_json = run_semgrep()
+findings = semgrep_json.get("results", []) if semgrep_json else []
+semgrep_summary = format_semgrep(findings)
 
 # GitHub client
 gh = Github(auth=Auth.Token(github_token))
@@ -74,23 +94,23 @@ pr = repo.get_pull(pr_number)
 
 # LLM prompt
 prompt = f"""
-You are an expert technical editor and PR summarizer. Your goal is to provide a 
-concise, structured summary of the Pull Request (PR) based on the provided code diff.
+You are an expert technical editor and PR summarizer. Your goal is to provide a
+concise, structured summary of the Pull Request based on the provided code diff.
 
-### DIFF 
+### DIFF
 {diff_content}
 
 ### SEMGREP CONFIG
 {semgrep_config}
 
-### SEMGREP REPORT 
+### Analysis REPORT
 {semgrep_summary}
 
 ### Summary
-- 2–3 bullets describing concrete changes in the diff. if the changes are more add more bullets.
+- 2–3 bullets describing concrete changes in the diff. If changes are more, add more bullets.
 
 ### Why It Matters
-- 1–2 Only insights grounded in diff..  if the changes are more add more bullets.
+- 1–2 insights grounded in diff. If changes are more, add more bullets.
 
 ### Issues
 - Real issues from diff or Semgrep. Write "No issues found" if nothing.
@@ -102,15 +122,14 @@ concise, structured summary of the Pull Request (PR) based on the provided code 
 - LOW / MEDIUM / HIGH.
 
 ### Recommendations
-- Max 2 bullets based ONLY on the diff. if the changes are more add more bullets.
-
+- Max 2 bullets based ONLY on the diff. If changes are more, add more bullets.
 
 RULES:
 - No generic text.
 - No hallucinations.
-- Must not use  any tool name or any thing working behind the scenes in the report.
-- MUST stay under 140 words.
+- Must stay under 140 words.
 - Semgrep section MUST appear in final output.
+- Must not refer to tools or internal processes.
 """
 
 client = genai.Client(api_key=api_key)

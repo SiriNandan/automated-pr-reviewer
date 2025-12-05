@@ -26,14 +26,13 @@ jobs:
         run: |
           pip install google-genai PyGithub semgrep requests
 
-      - name: Run Semgrep Analysis
+      - name: Run Semgrep
         run: |
           semgrep --config auto --json > semgrep_output.json || true
         env:
           SEMGREP_CONFIG: auto
 
       - name: Fetch PR Diff
-        id: diff
         run: |
           gh pr diff ${{ github.event.pull_request.number }} --patch > pr_diff.patch
         env:
@@ -48,11 +47,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEMGREP_CONFIG: auto
         run: |
-          if [ -z "$GEMINI_API_KEY" ]; then
-            echo "Gemini API key missing! Did you add GEMINI_API_KEY to repo secrets?"
-            exit 1
-          fi
-
           SUMMARY=$(python llm.py pr_diff.patch semgrep_output.json)
           {
             echo "summary<<EOF"
@@ -62,7 +56,6 @@ jobs:
 
       - name: Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
-        if: always()
         with:
           message: |
             ## Automated PR Review
