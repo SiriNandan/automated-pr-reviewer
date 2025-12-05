@@ -13,8 +13,9 @@ pr_number = int(os.getenv("PR_NUMBER"))
 github_token = os.getenv("GITHUB_TOKEN")
 semgrep_config = os.getenv("SEMGREP_CONFIG", "auto")
 
-# Read inputs safely
+# ---- Read DIFF INPUT ----
 diff_path = sys.argv[1] if len(sys.argv) > 1 else None
+semgrep_path = sys.argv[2] if len(sys.argv) > 2 else None
 
 diff_content = ""
 if diff_path and os.path.exists(diff_path):
@@ -25,115 +26,114 @@ if len(diff_content) < 10:
     print("Diff missing or too small. Unable to generate PR summary.")
     sys.exit(0)
 
-# Run Semgrep (JSON + text)
-def run_semgrep():
-    json_out = "/tmp/semgrep.json"
-
+# ---- Read Semgrep JSON ----
+semgrep_json = {}
+if semgrep_path and os.path.exists(semgrep_path):
     try:
-        subprocess.run(
-            [
-                "semgrep", "scan",
-                "--config", semgrep_config,
-                "--json",
-                "--output", json_out
-            ],
-            check=False
-        )
-    except Exception as e:
-        return None
+        with open(semgrep_path, "r", encoding="utf-8") as f:
+            semgrep_json = json.load(f)
+    except:
+        semgrep_json = {}
 
-    if os.path.exists(json_out):
-        try:
-            with open(json_out, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except:
-            return None
+findings = semgrep_json.get("results", [])
 
-    return None
-
-# Convert Semgrep JSON to readable grouped text
-def format_semgrep(findings):
-    if not findings:
-        return "No Semgrep issues found."
-
+# ---- Group Semgrep Findings ----
+def format_grouped_findings(results):
+    if not results:
+        return "No issues detected."
+    
     grouped = {}
-    for f in findings:
+    for f in results:
         sev = f.get("extra", {}).get("severity", "UNKNOWN").upper()
         grouped.setdefault(sev, []).append(f)
 
-    output = []
-    for severity in ["ERROR", "WARNING", "INFO", "UNKNOWN"]:
-        if severity not in grouped:
+    text = []
+    for sev in ["ERROR", "WARNING", "INFO", "UNKNOWN"]:
+        if sev not in grouped:
             continue
-
-        output.append(f"\n### {severity} Findings")
-        for item in grouped[severity]:
-            rule = item.get("check_id", "unknown-rule")
-            msg = item.get("extra", {}).get("message", "")
-            file = item.get("path", "unknown-file")
-            line = item.get("start", {}).get("line", "?")
-
-            output.append(
-                f"- Rule: {rule}\n"
-                f"  Message: {msg}\n"
-                f"  File: {file}\n"
-                f"  Line: {line}"
+        text.append(f"\n### {sev} Findings")
+        for item in grouped[sev]:
+            text.append(
+                f"- **Rule:** {item.get('check_id')}\n"
+                f"  **Message:** {item.get('extra', {}).get('message', '')}\n"
+                f"  **File:** {item.get('path')}\n"
+                f"  **Line:** {item.get('start', {}).get('line')}"
             )
+    return "\n".join(text)
 
-    return "\n".join(output).strip()
+analysis_summary = format_grouped_findings(findings)
 
-# Run Semgrep
-semgrep_json = run_semgrep()
-findings = semgrep_json.get("results", []) if semgrep_json else []
-semgrep_summary = format_semgrep(findings)
+# ---- Metadata Extraction ----
+analysis_metadata = {
+    "version": semgrep_json.get("version"),
+    "configs": semgrep_json.get("configs"),
+    "rules": semgrep_json.get("rules"),
+    "paths_scanned": semgrep_json.get("paths", {}).get("scanned"),
+    "errors": semgrep_json.get("errors"),
+    "total_findings": len(findings),
+}
 
-# GitHub client
-gh = Github(auth=Auth.Token(github_token))
-repo = gh.get_repo(repo_full)
-pr = repo.get_pull(pr_number)
+# ---- Raw Metadata (truncated) ----
+raw_meta = json.dumps(analysis_metadata, indent=2)
+if len(raw_meta) > 2500:
+    raw_meta = raw_meta[:2500] + "\n...(truncated)..."
 
-# LLM prompt
+# ---- PROMPT ----
 prompt = f"""
-You are an expert technical editor and PR summarizer. Your goal is to provide a
-concise, structured summary of the Pull Request based on the provided code diff.
+You are an expert technical PR reviewer.
 
 ### DIFF
 {diff_content}
 
-### SEMGREP CONFIG
-{semgrep_config}
+---
 
-### Analysis REPORT
-{semgrep_summary}
+## 🔍 ANALYSIS REPORT
+{analysis_summary}
+
+---
+
+## 🧩 ANALYSIS METADATA
+- Version: {analysis_metadata['version']}
+- Configs: {analysis_metadata['configs']}
+- Files Scanned: {analysis_metadata['paths_scanned']}
+- Total Findings: {analysis_metadata['total_findings']}
+- Errors: {analysis_metadata['errors']}
+
+---
+
+## 🗂 RAW ANALYSIS METADATA (for LLM context)
+{raw_meta}
+
+---
+
+### REQUIRED OUTPUT FORMAT (max 140 words)
 
 ### Summary
-- 2–3 bullets describing concrete changes in the diff. If changes are more, add more bullets.
+- 2–3 bullets describing concrete changes
 
 ### Why It Matters
-- 1–2 insights grounded in diff. If changes are more, add more bullets.
+- Real reasoning based on diff
 
 ### Issues
-- Real issues from diff or Semgrep. Write "No issues found" if nothing.
+- Combine analysis + real code issues
 
 ### Verdict
-- Approve / Needs Fixes / Review Required.
+- Approve / Needs Fixes / Review Required
 
 ### Risk Level
-- LOW / MEDIUM / HIGH.
+- LOW / MEDIUM / HIGH
 
 ### Recommendations
-- Max 2 bullets based ONLY on the diff. If changes are more, add more bullets.
+- Up to 2 bullets, no generic advice
 
 RULES:
-- No generic text.
-- No hallucinations.
-- Must stay under 140 words.
-- Semgrep section MUST appear in final output.
-- Must not refer to tools or internal processes.
+- No hallucinations
+- Must use analysis metadata
+- Must use grouped analysis findings
+- No references to tools
 """
 
 client = genai.Client(api_key=api_key)
-
 response = client.models.generate_content(
     model="gemini-2.0-flash",
     contents=prompt
