@@ -1,36 +1,62 @@
-name: Automated PR Review
+name: Automated PR Reviewer
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  review:
+  review_and_summarize:
     runs-on: ubuntu-latest
+
     permissions:
+      contents: read
       pull-requests: write
 
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.11"
 
-      - name: Install analysis tool(s)
+      - name: Install Dependencies
         run: |
-          pip install semgrep
+          pip install google-genai PyGithub semgrep requests
 
-      - name: Run static analysis / review logic
+      - name: Run Semgrep
         run: |
-          semgrep --config auto  # or your custom config / tool
+          semgrep --config auto --json > semgrep_output.json || true
+        env:
+          SEMGREP_CONFIG: auto
 
-      - name: Comment on PR with results
+      - name: Fetch PR Diff
+        run: |
+          gh pr diff ${{ github.event.pull_request.number }} --patch > pr_diff.patch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate PR Summary
+        id: llm
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          REPO_FULL_NAME: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEMGREP_CONFIG: auto
+        run: |
+          SUMMARY=$(python llm.py pr_diff.patch semgrep_output.json)
+          {
+            echo "summary<<EOF"
+            echo "$SUMMARY"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
-        if: always()
         with:
           message: |
-            ## 🔎 Automated Review Results  
-            Static analysis done!! 
+            ## Automated PR Review
+            ${{ steps.llm.outputs.summary }}
