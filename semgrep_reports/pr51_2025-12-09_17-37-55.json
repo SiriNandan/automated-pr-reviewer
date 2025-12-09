@@ -1,0 +1,161 @@
+{
+  "version": "1.145.0",
+  "results": [],
+  "errors": [
+    {
+      "code": 3,
+      "level": "warn",
+      "type": [
+        "PartialParsing",
+        [
+          {
+            "path": ".github/workflows/pr_reviewer.yml",
+            "start": {
+              "line": 66,
+              "col": 67,
+              "offset": 1427
+            },
+            "end": {
+              "line": 66,
+              "col": 101,
+              "offset": 1461
+            }
+          },
+          {
+            "path": ".github/workflows/pr_reviewer.yml",
+            "start": {
+              "line": 69,
+              "col": 46,
+              "offset": 1427
+            },
+            "end": {
+              "line": 69,
+              "col": 80,
+              "offset": 1461
+            }
+          }
+        ]
+      ],
+      "message": "Syntax error at line .github/workflows/pr_reviewer.yml:66:\n When parsing a snippet as Bash for metavariable-pattern in rule 'yaml.github-actions.security.curl-eval.curl-eval', `{ github.event.pull_request.number` was unexpected",
+      "path": ".github/workflows/pr_reviewer.yml",
+      "spans": [
+        {
+          "file": ".github/workflows/pr_reviewer.yml",
+          "start": {
+            "line": 66,
+            "col": 67,
+            "offset": 1427
+          },
+          "end": {
+            "line": 66,
+            "col": 101,
+            "offset": 1461
+          }
+        },
+        {
+          "file": ".github/workflows/pr_reviewer.yml",
+          "start": {
+            "line": 69,
+            "col": 46,
+            "offset": 1427
+          },
+          "end": {
+            "line": 69,
+            "col": 80,
+            "offset": 1461
+          }
+        }
+      ]
+    }
+  ],
+  "paths": {
+    "scanned": [
+      ".github/workflows/pr_reviewer.yml",
+      "README.md",
+      "llm.py",
+      "newcommit.txt",
+      "semgrep_reports/pr51_2025-12-09_16-26-54.json",
+      "semgrep_reports/pr51_2025-12-09_17-13-28.json",
+      "semgrep_reports/pr51_2025-12-09_17-22-52.json",
+      "semgrep_reports/pr55_2025-12-09_16-35-19.json",
+      "semgrep_reports/pr55_2025-12-09_16-51-07.json",
+      "semgrep_reports/pr56_2025-12-09_16-53-53.json",
+      "semgrep_reports/pr58_2025-12-09_17-27-38.json",
+      "semgrep_reports/pr59_2025-12-09_17-34-28.json",
+      "test.py"
+    ]
+  },
+  "time": {
+    "rules": [],
+    "rules_parse_time": 1.2003540992736816,
+    "profiling_times": {
+      "config_time": 1.4694459438323975,
+      "core_time": 1.799259901046753,
+      "ignores_time": 0.001268148422241211,
+      "total_time": 3.2704410552978516
+    },
+    "parsing_time": {
+      "total_time": 0.0,
+      "per_file_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_files": []
+    },
+    "scanning_time": {
+      "total_time": 0.2782771587371826,
+      "per_file_time": {
+        "mean": 0.007521004290194126,
+        "std_dev": 0.00024671238660480335
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_files": []
+    },
+    "matching_time": {
+      "total_time": 0.0,
+      "per_file_and_rule_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_rules_on_files": []
+    },
+    "tainting_time": {
+      "total_time": 0.0,
+      "per_def_and_rule_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_rules_on_defs": []
+    },
+    "fixpoint_timeouts": [],
+    "prefiltering": {
+      "project_level_time": 0.0,
+      "file_level_time": 0.0,
+      "rules_with_project_prefilters_ratio": 0.0,
+      "rules_with_file_prefilters_ratio": 0.9497016197783461,
+      "rules_selected_ratio": 0.058823529411764705,
+      "rules_matched_ratio": 0.058823529411764705
+    },
+    "targets": [],
+    "total_bytes": 0,
+    "max_memory_bytes": 1165722944
+  },
+  "engine_requested": "OSS",
+  "skipped_rules": [],
+  "profiling_results": []
+}
