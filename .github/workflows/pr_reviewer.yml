@@ -62,10 +62,11 @@ jobs:
 
           mkdir -p semgrep_reports
           DATE=$(date +"%Y-%m-%d")
+          TIME=$(date +"%H-%M-%S")
 
           # Pretty print JSON using jq
           jq '.' analysis_output/semgrep_output.json \
-            > semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}.json
+            > semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}_${TIME}.json
 
           git add semgrep_reports/
           git commit -m "Add Semgrep metadata for PR ${{ github.event.pull_request.number }}"

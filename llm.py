@@ -43,7 +43,7 @@ with open("analysis_output/semgrep_metadata.json", "w", encoding="utf-8") as f:
 def load_repo_context_dynamic(root="."):
     context = {}
     max_file_size = 200000            
-    max_text_read = 10000             
+    max_text_read = 60000             
     text_extensions = [
         ".py", ".md", ".txt", ".yaml", ".yml", ".json", ".toml",
         ".js", ".ts", ".tsx", ".jsx", ".html", ".css", ".sh",
@@ -73,7 +73,7 @@ def load_repo_context_dynamic(root="."):
 
 repo_context = load_repo_context_dynamic()
 
-SystemPrompt = f"""
+Prompt = f"""
 You are an expert PR reviewer who fully understands this repository.
 You must generate highly specific feedback based only on:
 - Real repository context (every file scanned automatically)
@@ -88,34 +88,38 @@ REPOSITORY CONTEXT (auto-scanned)
 
 PR DIFF
 {diff_content}
+
 SEMGREP METADATA
 {json.dumps(analysis_metadata, indent=2)}
+
 Your Responsibilities:
 - Provide an accurate, context-aware PR review.
 - Reference the specific files and logic touched in the PR.
 - Explain real architectural, functional, or workflow impact.
 - Identify bugs, risks, regressions, security concerns only if present.
 - Do not assume behavior not shown in the repo context.
-Final Output Format (max 180 words)
+Final Output Format (max 100 words)
 
 ## Summary of Actual Changes
-- Describe exactly what the PR changed.
+- Describe exactly what the PR changed with respect to repository.
 
 ## Impact on This Repository
-- Explain how the changes affect workflows, functionality, or architecture.
+- Explain how the changes affect workflows, functionality, or architecture with respect to repository.
 
 ## Issues / Risks Found
-- Only list actual issues visible in diff or repo context.
+- Only list actual issues visible in diff or repo context .
 
 ## Required Fixes
-- Only list fixes specific to this PR.
+- Only list fixes specific to this PR with respect to repository.
 
 Do not output anything outside this format.
+Do not give the output more than  100 words 
+keep it small 
 """
 client = genai.Client(api_key=api_key)
 response = client.models.generate_content(
     model="gemini-2.5-flash",
-    contents=SystemPrompt,
+    contents=Prompt,
 )
 
 print(response.text.strip())
