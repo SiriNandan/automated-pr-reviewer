@@ -24,15 +24,15 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install google-genai PyGithub semgrep requests
+          pip install google-genai PyGithub semgrep requests jq
 
-      - name: Run Semgrep
+      - name: Run Semgrep (Auto config - always works)
         run: |
           mkdir -p analysis_output
-          semgrep scan --config=p/ci --json --output analysis_output/semgrep_output.json || true
-        env:
-          SEMGREP_CONFIG: p/ci
-
+          semgrep scan \
+            --config auto \
+            --json \
+            --output analysis_output/semgrep_output.json || true
 
       - name: Fetch PR Diff
         run: gh pr diff ${{ github.event.pull_request.number }} --patch > pr_diff.patch
@@ -44,7 +44,6 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          SEMGREP_CONFIG: auto
         run: |
           OUTPUT=$(python llm.py pr_diff.patch analysis_output/semgrep_output.json)
           {
@@ -65,14 +64,12 @@ jobs:
           DATE=$(date +"%Y-%m-%d")
           TIME=$(date +"%H-%M-%S")
 
-          # Pretty print JSON using jq
           jq '.' analysis_output/semgrep_output.json \
             > semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}_${TIME}.json
 
           git add semgrep_reports/
-          git commit -m "Add Semgrep metadata for PR ${{ github.event.pull_request.number }}"
-          git push origin main
-
+          git commit -m "Add Semgrep metadata for PR ${{ github.event.pull_request.number }}" || true
+          git push origin main || true
 
       - name: Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
