@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
 
     steps:
@@ -38,7 +38,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate PR Summary
+      - name: Generate PR Summary & Metadata
         id: llm
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -54,11 +54,18 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Upload Analysis JSON Files
-        uses: actions/upload-artifact@v4
+      - name: Save Semgrep Metadata to Repo Folder
+        run: |
+          mkdir -p .semgrep_reports
+          DATE=$(date +"%Y-%m-%d")
+          FILE=".semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}.json"
+          cp analysis_output/semgrep_metadata.json "$FILE"
+
+      - name: Commit JSON into Repo
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          name: pr-analysis-json
-          path: analysis_output/*.json
+          commit_message: "Add Semgrep metadata for PR ${{ github.event.pull_request.number }}"
+          file_pattern: ".semgrep_reports/*.json"
 
       - name: Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
