@@ -62,7 +62,7 @@ jobs:
           git checkout main
 
           mkdir -p semgrep_reports
-          DATE=$(date +"%Y/%m/%d")
+          DATE=$(date +"%Y-%m-%d")
           TIME=$(date +"%H-%M-%S")
 
           # Pretty print JSON using jq
