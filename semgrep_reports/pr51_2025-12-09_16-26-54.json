@@ -1,0 +1,153 @@
+{
+  "version": "1.145.0",
+  "results": [],
+  "errors": [
+    {
+      "code": 3,
+      "level": "warn",
+      "type": [
+        "PartialParsing",
+        [
+          {
+            "path": ".github/workflows/pr_reviewer.yml",
+            "start": {
+              "line": 66,
+              "col": 67,
+              "offset": 1427
+            },
+            "end": {
+              "line": 66,
+              "col": 101,
+              "offset": 1461
+            }
+          },
+          {
+            "path": ".github/workflows/pr_reviewer.yml",
+            "start": {
+              "line": 69,
+              "col": 46,
+              "offset": 1427
+            },
+            "end": {
+              "line": 69,
+              "col": 80,
+              "offset": 1461
+            }
+          }
+        ]
+      ],
+      "message": "Syntax error at line .github/workflows/pr_reviewer.yml:66:\n When parsing a snippet as Bash for metavariable-pattern in rule 'yaml.github-actions.security.curl-eval.curl-eval', `{ github.event.pull_request.number` was unexpected",
+      "path": ".github/workflows/pr_reviewer.yml",
+      "spans": [
+        {
+          "file": ".github/workflows/pr_reviewer.yml",
+          "start": {
+            "line": 66,
+            "col": 67,
+            "offset": 1427
+          },
+          "end": {
+            "line": 66,
+            "col": 101,
+            "offset": 1461
+          }
+        },
+        {
+          "file": ".github/workflows/pr_reviewer.yml",
+          "start": {
+            "line": 69,
+            "col": 46,
+            "offset": 1427
+          },
+          "end": {
+            "line": 69,
+            "col": 80,
+            "offset": 1461
+          }
+        }
+      ]
+    }
+  ],
+  "paths": {
+    "scanned": [
+      ".github/workflows/pr_reviewer.yml",
+      "README.md",
+      "llm.py",
+      "newcommit.txt",
+      "test.py"
+    ]
+  },
+  "time": {
+    "rules": [],
+    "rules_parse_time": 1.230180025100708,
+    "profiling_times": {
+      "config_time": 1.5794310569763184,
+      "core_time": 1.8076488971710205,
+      "ignores_time": 0.001375436782836914,
+      "total_time": 3.389009714126587
+    },
+    "parsing_time": {
+      "total_time": 0.0,
+      "per_file_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_files": []
+    },
+    "scanning_time": {
+      "total_time": 0.16948199272155762,
+      "per_file_time": {
+        "mean": 0.01303707636319674,
+        "std_dev": 0.0007436452495698684
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_files": []
+    },
+    "matching_time": {
+      "total_time": 0.0,
+      "per_file_and_rule_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_rules_on_files": []
+    },
+    "tainting_time": {
+      "total_time": 0.0,
+      "per_def_and_rule_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_rules_on_defs": []
+    },
+    "fixpoint_timeouts": [],
+    "prefiltering": {
+      "project_level_time": 0.0,
+      "file_level_time": 0.0,
+      "rules_with_project_prefilters_ratio": 0.0,
+      "rules_with_file_prefilters_ratio": 0.9537648612945839,
+      "rules_selected_ratio": 0.05812417437252312,
+      "rules_matched_ratio": 0.05812417437252312
+    },
+    "targets": [],
+    "total_bytes": 0,
+    "max_memory_bytes": 1129040256
+  },
+  "engine_requested": "OSS",
+  "skipped_rules": [],
+  "profiling_results": []
+}
