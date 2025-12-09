@@ -74,47 +74,64 @@ def load_repo_context_dynamic(root="."):
 repo_context = load_repo_context_dynamic()
 
 Prompt = f"""
-You are an expert PR reviewer who fully understands this repository.
-You must generate highly specific feedback based only on:
-- Real repository context (every file scanned automatically)
-- Actual PR diff
-- Semgrep metadata
+You are an expert PR reviewer with strict rules.  
+You MUST generate your review ONLY from the following inputs:
 
-Do not give generic suggestions.
-Do not hallucinate missing functionality.
+1. **PR DIFF (actual code changes)**
+2. **Semgrep RESULTS (raw findings — not metadata)**
+3. **REPO CONTEXT (only files touched in the diff)**
 
-REPOSITORY CONTEXT (auto-scanned)
-{json.dumps(repo_context, indent=2)}
+You are FORBIDDEN from:
+- Making assumptions about code not shown.
+- Giving generic advice (e.g., “add logging”, “improve docs”).
+- Mentioning best practices unless clearly violated in the diff.
+- Fabricating repo structure, files, or behavior.
+- Ignoring Semgrep findings.
 
-PR DIFF
+If Semgrep finds NOTHING, you MUST say there are **no Semgrep-based issues**.
+
+If the diff shows NO problems, you MUST say **no issues found in diff**.
+
+Your job is to give a **compact 100-word max** review that is:
+- Precise
+- Based on real evidence
+- Tied to specific files/lines
+- Non-generic
+
+---
+
+## INPUT: PR DIFF
 {diff_content}
 
-SEMGREP METADATA
-{json.dumps(analysis_metadata, indent=2)}
+## INPUT: SEMGREP FINDINGS (raw)
+{json.dumps(semgrep_json.get("results", []), indent=2)}
 
-Your Responsibilities:
-- Provide an accurate, context-aware PR review.
-- Reference the specific files and logic touched in the PR.
-- Explain real architectural, functional, or workflow impact.
-- Identify bugs, risks, regressions, security concerns only if present.
-- Do not assume behavior not shown in the repo context.
-Final Output Format (max 100 words)
+## INPUT: REPO CONTEXT (files touched)
+{json.dumps(repo_context, indent=2)}
+
+---
+
+## You MUST produce output EXACTLY in this format:
 
 ## Summary of Actual Changes
-- Describe exactly what the PR changed with respect to repository.
+- State exactly what changed, referring only to diff.
 
 ## Impact on This Repository
-- Explain how the changes affect workflows, functionality, or architecture with respect to repository.
+- Describe actual effects based ONLY on visible code.
 
 ## Issues / Risks Found
-- Only list actual issues visible in diff or repo context .
+- ONLY list:
+  - Semgrep findings (cite rule_id)
+  - Real bugs visible in diff.
+- If none → write: “No issues found.”
 
 ## Required Fixes
-- Only list fixes specific to this PR with respect to repository.
+- ONLY fixes backed by diff or Semgrep.
+- Use precise file/line references when possible.
+- If none → write: “No fixes required.”
 
-Do not output anything outside this format.
-Do not give the output more than  100 words 
-keep it small 
+You MUST stay under 100 words.
+You MUST NOT add extra sections or commentary.
 """
 client = genai.Client(api_key=api_key)
 response = client.models.generate_content(
