@@ -81,19 +81,22 @@
       "README.md",
       "agent.py",
       "analysis_output/semgrep_output.json",
+      "cocktail.py",
       "llm.py",
+      "main.py",
       "semgrep_reports/pr48_2025-12-09.json",
+      "semgrep_reports/pr49_2025-12-09.json",
       "semgrep_reports/test.txt"
     ]
   },
   "time": {
     "rules": [],
-    "rules_parse_time": 1.2774200439453125,
+    "rules_parse_time": 1.2213449478149414,
     "profiling_times": {
-      "config_time": 1.5004801750183105,
-      "core_time": 1.8693997859954834,
-      "ignores_time": 0.001354217529296875,
-      "total_time": 3.371816635131836
+      "config_time": 1.5498924255371094,
+      "core_time": 1.8855228424072266,
+      "ignores_time": 0.0012750625610351562,
+      "total_time": 3.437221050262451
     },
     "parsing_time": {
       "total_time": 0.0,
@@ -108,10 +111,10 @@
       "very_slow_files": []
     },
     "scanning_time": {
-      "total_time": 0.22558093070983887,
+      "total_time": 0.4667837619781494,
       "per_file_time": {
-        "mean": 0.01187268056367573,
-        "std_dev": 0.000612416558757215
+        "mean": 0.016670848642076765,
+        "std_dev": 0.0015947232241701847
       },
       "very_slow_stats": {
         "time_ratio": 0.0,
@@ -148,13 +151,13 @@
       "project_level_time": 0.0,
       "file_level_time": 0.0,
       "rules_with_project_prefilters_ratio": 0.0,
-      "rules_with_file_prefilters_ratio": 0.9556592765460911,
-      "rules_selected_ratio": 0.057176196032672114,
-      "rules_matched_ratio": 0.057176196032672114
+      "rules_with_file_prefilters_ratio": 0.9684775318578136,
+      "rules_selected_ratio": 0.056338028169014086,
+      "rules_matched_ratio": 0.056338028169014086
     },
     "targets": [],
     "total_bytes": 0,
-    "max_memory_bytes": 1117703872
+    "max_memory_bytes": 1183601664
   },
   "engine_requested": "OSS",
   "skipped_rules": [],
