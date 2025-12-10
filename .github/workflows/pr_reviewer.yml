@@ -22,16 +22,17 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install GitHub CLI
-        run: sudo apt-get install -y gh
-
       - name: Install Dependencies
-        run: pip install google-genai PyGithub semgrep requests jq
+        run: |
+          pip install google-genai PyGithub semgrep requests jq
 
-      - name: Run Semgrep
+      - name: Run Semgrep (Auto config - always works)
         run: |
           mkdir -p analysis_output
-          semgrep scan --config auto --json --output analysis_output/semgrep_output.json || true
+          semgrep scan \
+            --config auto \
+            --json \
+            --output analysis_output/semgrep_output.json || true
 
       - name: Fetch PR Diff
         run: gh pr diff ${{ github.event.pull_request.number }} --patch > pr_diff.patch
@@ -42,6 +43,7 @@ jobs:
         id: llm
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           OUTPUT=$(python llm.py pr_diff.patch analysis_output/semgrep_output.json)
           {
@@ -50,7 +52,7 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Save Semgrep Report to Main Branch
+      - name: Save Semgrep Report to MAIN branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -59,7 +61,6 @@ jobs:
           git checkout main
 
           mkdir -p semgrep_reports
-
           DATE=$(date +"%Y-%m-%d")
           TIME=$(date +"%H-%M-%S")
 
@@ -69,7 +70,7 @@ jobs:
           git commit -m "Add Semgrep metadata for PR ${{ github.event.pull_request.number }}" || echo "No changes to commit"
           git push origin main
 
-      - name: Comment Review on PR
+      - name: Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
         with:
           message: |
