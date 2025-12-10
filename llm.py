@@ -102,7 +102,7 @@ OUTPUT EXACTLY IN THIS FORMAT:
 ## Impact
 - Actual effects based ONLY on diff.
 
-## Issues / Risks Found(give this section in 2-3 bullet points but add more bullet points if needed)
+## Issues / Risks Found
 - Semgrep findings (rule)
 - Real bugs from diff
 - If none: “No issues found.”
