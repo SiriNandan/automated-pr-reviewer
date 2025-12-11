@@ -90,7 +90,7 @@ Max length: 100 words.
 ## DIFF
 {diff_content}
 
-## SEMGREP FINDINGS
+## ANALYSIS FINDINGS
 {json.dumps(compressed_findings, indent=2)}
 
 ## REPO CONTEXT (only changed files)
@@ -104,7 +104,7 @@ OUTPUT EXACTLY IN THIS FORMAT:
 - give 1 to 2 buillet points for  Actual effects based ONLY on diff.
 
 ## Issues / Risks Found
-- Semgrep findings (rule)
+- Analysis Findings (rule)
 - Real bugs from diff
 - If none: “No issues found.”
 - give 2 to 4 buillet points 
