@@ -1,36 +1,82 @@
-name: Automated PR Review
+name: Automated PR Reviewer
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  review:
+  review_and_summarize:
     runs-on: ubuntu-latest
+
     permissions:
+      contents: write
       pull-requests: write
 
     steps:
-      - name: Checkout code
+
+      - name: Checkout PR code
         uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.11"
 
-      - name: Install analysis tool(s)
+      - name: Install Dependencies
         run: |
-          pip install semgrep
+          pip install google-genai PyGithub semgrep requests jq
 
-      - name: Run static analysis / review logic
+      - name: Run Semgrep (Auto config)
         run: |
-          semgrep --config auto  # or your custom config / tool
+          mkdir -p analysis_output
+          semgrep scan \
+            --config auto \
+            --json \
+            --output analysis_output/semgrep_output.json || true
 
-      - name: Comment on PR with results
+      - name: Fetch PR Diff
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr diff ${{ github.event.pull_request.number }} --patch > pr_diff.patch
+
+      - name: Generate PR Summary & Metadata
+        id: llm
+        run: |
+          # Export environment variables so Python receives them
+          export GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
+          export PR_NUMBER="${{ github.event.pull_request.number }}"
+
+          OUTPUT=$(python llm.py pr_diff.patch analysis_output/semgrep_output.json)
+
+          {
+            echo "summary<<EOF"
+            echo "$OUTPUT"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Save Semgrep Report to Main Branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin main
+          git checkout main
+
+          mkdir -p semgrep_reports
+          DATE=$(date +"%Y-%m-%d")
+          TIME=$(date +"%H-%M-%S")
+
+          jq '.' analysis_output/semgrep_output.json \
+            > "semgrep_reports/pr${{ github.event.pull_request.number }}_${DATE}_${TIME}.json"
+
+          git add semgrep_reports/
+          git commit -m "Add Semgrep metadata for PR ${{ github.event.pull_request.number }}" || echo "No changes to commit"
+          git push origin main
+
+      - name: Post PR Review Comment
         uses: thollander/actions-comment-pull-request@v3
-        if: always()
         with:
           message: |
-            ## 🔎 Automated Review Results  
-            Static analysis done!! 
+            ## Automated PR Review
+            ${{ steps.llm.outputs.summary }}

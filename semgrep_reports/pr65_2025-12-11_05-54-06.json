@@ -1,0 +1,335 @@
+{
+  "version": "1.145.0",
+  "results": [
+    {
+      "check_id": "python.lang.security.audit.insecure-transport.requests.request-with-http.request-with-http",
+      "path": "pr_review2.py",
+      "start": {
+        "line": 17,
+        "col": 33,
+        "offset": 381
+      },
+      "end": {
+        "line": 17,
+        "col": 36,
+        "offset": 384
+      },
+      "extra": {
+        "message": "Detected a request using 'http://'. This request will be unencrypted, and attackers could listen into traffic on the network and be able to obtain sensitive information. Use 'https://' instead.",
+        "metadata": {
+          "owasp": [
+            "A03:2017 - Sensitive Data Exposure",
+            "A02:2021 - Cryptographic Failures"
+          ],
+          "cwe": [
+            "CWE-319: Cleartext Transmission of Sensitive Information"
+          ],
+          "asvs": {
+            "control_id": "9.1.1 Weak TLS",
+            "control_url": "https://github.com/OWASP/ASVS/blob/master/4.0/en/0x17-V9-Communications.md#v92-server-communications-security-requirements",
+            "section": "V9 Communications Verification Requirements",
+            "version": "4"
+          },
+          "category": "security",
+          "technology": [
+            "requests"
+          ],
+          "references": [
+            "https://owasp.org/Top10/A02_2021-Cryptographic_Failures"
+          ],
+          "subcategory": [
+            "audit"
+          ],
+          "likelihood": "LOW",
+          "impact": "LOW",
+          "confidence": "MEDIUM",
+          "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+          "vulnerability_class": [
+            "Mishandled Sensitive Information"
+          ],
+          "source": "https://semgrep.dev/r/python.lang.security.audit.insecure-transport.requests.request-with-http.request-with-http",
+          "shortlink": "https://sg.run/W8J4"
+        },
+        "severity": "INFO",
+        "fingerprint": "requires login",
+        "lines": "requires login",
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "OSS"
+      }
+    },
+    {
+      "check_id": "python.lang.security.audit.eval-detected.eval-detected",
+      "path": "pr_review2.py",
+      "start": {
+        "line": 43,
+        "col": 12,
+        "offset": 1135
+      },
+      "end": {
+        "line": 43,
+        "col": 28,
+        "offset": 1151
+      },
+      "extra": {
+        "message": "Detected the use of eval(). eval() can be dangerous if used to evaluate dynamic content. If this content can be input from outside the program, this may be a code injection vulnerability. Ensure evaluated content is not definable by external sources.",
+        "metadata": {
+          "source-rule-url": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b307-eval",
+          "cwe": [
+            "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+          ],
+          "owasp": [
+            "A03:2021 - Injection"
+          ],
+          "asvs": {
+            "control_id": "5.2.4 Dyanmic Code Execution Features",
+            "control_url": "https://github.com/OWASP/ASVS/blob/master/4.0/en/0x13-V5-Validation-Sanitization-Encoding.md#v52-sanitization-and-sandboxing-requirements",
+            "section": "V5: Validation, Sanitization and Encoding Verification Requirements",
+            "version": "4"
+          },
+          "category": "security",
+          "technology": [
+            "python"
+          ],
+          "references": [
+            "https://owasp.org/Top10/A03_2021-Injection"
+          ],
+          "subcategory": [
+            "audit"
+          ],
+          "likelihood": "LOW",
+          "impact": "HIGH",
+          "confidence": "LOW",
+          "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+          "vulnerability_class": [
+            "Code Injection"
+          ],
+          "source": "https://semgrep.dev/r/python.lang.security.audit.eval-detected.eval-detected",
+          "shortlink": "https://sg.run/ZvrD"
+        },
+        "severity": "WARNING",
+        "fingerprint": "requires login",
+        "lines": "requires login",
+        "validation_state": "NO_VALIDATOR",
+        "engine_kind": "OSS"
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 3,
+      "level": "warn",
+      "type": [
+        "PartialParsing",
+        [
+          {
+            "path": ".github/workflows/pr_reviewer.yml",
+            "start": {
+              "line": 46,
+              "col": 26,
+              "offset": 1019
+            },
+            "end": {
+              "line": 46,
+              "col": 50,
+              "offset": 1043
+            }
+          },
+          {
+            "path": ".github/workflows/pr_reviewer.yml",
+            "start": {
+              "line": 47,
+              "col": 21,
+              "offset": 1019
+            },
+            "end": {
+              "line": 47,
+              "col": 55,
+              "offset": 1053
+            }
+          }
+        ]
+      ],
+      "message": "Syntax error at line .github/workflows/pr_reviewer.yml:46:\n When parsing a snippet as Bash for metavariable-pattern in rule 'yaml.github-actions.security.curl-eval.curl-eval', `{ secrets.GEMINI_API_KEY` was unexpected",
+      "path": ".github/workflows/pr_reviewer.yml",
+      "spans": [
+        {
+          "file": ".github/workflows/pr_reviewer.yml",
+          "start": {
+            "line": 46,
+            "col": 26,
+            "offset": 1019
+          },
+          "end": {
+            "line": 46,
+            "col": 50,
+            "offset": 1043
+          }
+        },
+        {
+          "file": ".github/workflows/pr_reviewer.yml",
+          "start": {
+            "line": 47,
+            "col": 21,
+            "offset": 1019
+          },
+          "end": {
+            "line": 47,
+            "col": 55,
+            "offset": 1053
+          }
+        }
+      ]
+    },
+    {
+      "code": 3,
+      "level": "warn",
+      "type": [
+        "PartialParsing",
+        [
+          {
+            "path": ".github/workflows/pr_reviewer.yml",
+            "start": {
+              "line": 70,
+              "col": 26,
+              "offset": 1494
+            },
+            "end": {
+              "line": 70,
+              "col": 60,
+              "offset": 1528
+            }
+          },
+          {
+            "path": ".github/workflows/pr_reviewer.yml",
+            "start": {
+              "line": 73,
+              "col": 46,
+              "offset": 1494
+            },
+            "end": {
+              "line": 73,
+              "col": 80,
+              "offset": 1528
+            }
+          }
+        ]
+      ],
+      "message": "Syntax error at line .github/workflows/pr_reviewer.yml:70:\n When parsing a snippet as Bash for metavariable-pattern in rule 'yaml.github-actions.security.curl-eval.curl-eval', `{ github.event.pull_request.number` was unexpected",
+      "path": ".github/workflows/pr_reviewer.yml",
+      "spans": [
+        {
+          "file": ".github/workflows/pr_reviewer.yml",
+          "start": {
+            "line": 70,
+            "col": 26,
+            "offset": 1494
+          },
+          "end": {
+            "line": 70,
+            "col": 60,
+            "offset": 1528
+          }
+        },
+        {
+          "file": ".github/workflows/pr_reviewer.yml",
+          "start": {
+            "line": 73,
+            "col": 46,
+            "offset": 1494
+          },
+          "end": {
+            "line": 73,
+            "col": 80,
+            "offset": 1528
+          }
+        }
+      ]
+    }
+  ],
+  "paths": {
+    "scanned": [
+      ".github/workflows/pr_reviewer.yml",
+      "README.md",
+      "llm.py",
+      "pr_review2.py",
+      "semgrep_reports/pr64_2025-12-10_06-18-42.json",
+      "semgrep_reports/pr65_2025-12-11_04-48-40.json",
+      "semgrep_reports/pr65_2025-12-11_05-06-15.json",
+      "semgrep_reports/pr65_2025-12-11_05-07-54.json",
+      "semgrep_reports/pr65_2025-12-11_05-16-19.json"
+    ]
+  },
+  "time": {
+    "rules": [],
+    "rules_parse_time": 1.2255990505218506,
+    "profiling_times": {
+      "config_time": 1.7166039943695068,
+      "core_time": 1.7966151237487793,
+      "ignores_time": 0.0013804435729980469,
+      "total_time": 3.515143632888794
+    },
+    "parsing_time": {
+      "total_time": 0.0,
+      "per_file_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_files": []
+    },
+    "scanning_time": {
+      "total_time": 0.25122857093811035,
+      "per_file_time": {
+        "mean": 0.009662637343773473,
+        "std_dev": 0.00039515466164403155
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_files": []
+    },
+    "matching_time": {
+      "total_time": 0.0,
+      "per_file_and_rule_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_rules_on_files": []
+    },
+    "tainting_time": {
+      "total_time": 0.0,
+      "per_def_and_rule_time": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "very_slow_stats": {
+        "time_ratio": 0.0,
+        "count_ratio": 0.0
+      },
+      "very_slow_rules_on_defs": []
+    },
+    "fixpoint_timeouts": [],
+    "prefiltering": {
+      "project_level_time": 0.0,
+      "file_level_time": 0.0,
+      "rules_with_project_prefilters_ratio": 0.0,
+      "rules_with_file_prefilters_ratio": 0.9484004127966976,
+      "rules_selected_ratio": 0.07636738906088751,
+      "rules_matched_ratio": 0.07636738906088751
+    },
+    "targets": [],
+    "total_bytes": 0,
+    "max_memory_bytes": 1155652352
+  },
+  "engine_requested": "OSS",
+  "skipped_rules": [],
+  "profiling_results": []
+}
